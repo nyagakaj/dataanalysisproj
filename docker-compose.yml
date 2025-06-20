@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: researchdb
+    ports:
+      - '5433:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - DB_URL=postgresql://admin:secret@db:5432/researchdb
+      - JWT_SECRET=your_jwt_secret
+    ports:
+      - '4000:4000'
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
